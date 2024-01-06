@@ -146,7 +146,8 @@ class UpdateProductPrice(APIView):
         # Update the current price
         product_shop.price = new_price
         product_shop.save()
-
+        PriceHistory.objects.create(product_shop=product_shop, price=product_shop.price)
+        
         # You can return a response as needed
         data = ProductSerializer(product_shop.product).data
         data['stock_quantity'] = product_shop.stock_quantity

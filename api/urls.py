@@ -17,6 +17,9 @@ urlpatterns = [
     path("verify/<str:uidb64>/<str:token>", views.Verify.as_view(), name="verify"),
     path("shops/<int:shop_id>/products/<int:product_id>", views.ProductDetail.as_view(),name="product_detail"),
     path('shops/search-products/<str:search_query>', views.SearchProducts.as_view(), name='search-products'),
+    path("shops/<int:shop_id>/products/<int:product_id>/update_prices", views.UpdateProductPrice.as_view(),name="product_update_price"),
+    
+
   
   
  

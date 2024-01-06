@@ -76,8 +76,10 @@ class CommentImage(models.Model):
 
 class PriceHistory(models.Model):
     product_shop = models.ForeignKey(ProductShop, on_delete=models.CASCADE)
-    prices = ArrayField(models.DecimalField(max_digits=10, decimal_places=2), default=list)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default =0)
     updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.product_shop.product.product_name} - {self.product_shop.shop.shop_name} - Price: {self.price} at {self.updated_at}"
+    
+
