@@ -24,7 +24,7 @@ from .serializers import (
 )
 from django.http import HttpResponse
 from django.http import JsonResponse
-from .models import Product,Shop,CommentImage,Category,Comment,CustomUser,ProductShop,ProductImage,ProductCategory
+from .models import Product,Shop,CommentImage,Category,Comment,CustomUser,ProductShop,ProductImage,ProductCategory,Review,PriceHistory
 
 class SignUp(APIView):
     permission_classes = [AllowAny]
@@ -80,14 +80,79 @@ class Verify(APIView):
 
 class ProductDetail(APIView):
 
-    def get(self,request,shop_id,product_id):
-        product = get_object_or_404(Product,product_id= product_id)
-        product_shop = get_object_or_404(ProductShop, shop_id=shop_id,product_id=product_id)
+    def get(self, request, shop_id, product_id):
+        product = get_object_or_404(Product, product_id=product_id)
+        product_shop = get_object_or_404(ProductShop, shop_id=shop_id, product_id=product_id)
         quantity = product_shop.stock_quantity
+        price = product_shop.price
+        reviews = Review.objects.filter(product=product)
+
+        # Calculate average rating
+        total_ratings = reviews.count()
+        if total_ratings > 0:
+            average_rating = sum(review.rating for review in reviews) / total_ratings
+        else:
+            average_rating = 0
+
+        # Add average rating and total ratings to the response data
         data = ProductSerializer(product).data
         data['stock_quantity'] = quantity
-        return Response(data=data)
+        data['average_rating'] = average_rating
+        data['total_ratings'] = total_ratings
+        data['price'] = price
+
+        return Response(data=data, status=status.HTTP_200_OK)
     
+
+class SearchProducts(APIView):
+
+    def get(self, request, search_query):
+        # Fetch all products that contain the specified search query in their names
+        matching_products = Product.objects.filter(product_name__icontains=search_query)
+
+        # Create a list to store information about each matching product
+        result_data = []
+        for product in matching_products:
+            # Fetch the prices for each shop
+            product_shops = ProductShop.objects.filter(product=product)
+            shop_product_info = []
+
+            for product_shop in product_shops:
+                shop_product_info.append({
+                    "shop_id": product_shop.shop.shop_id,
+                    "shop_name": product_shop.shop.shop_name,
+                    "price": product_shop.price,
+                })
+
+            # Append information about the product to the result list
+            result_data.append({
+                "product_id": product.product_id,
+                "product_name": product.product_name,
+                "infor": shop_product_info,
+            })
+
+        return Response(data=result_data, status=status.HTTP_200_OK)
+
+
+class UpdateProductPrice(APIView):
+
+    def post(self, request, shop_id, product_id):
+        product_shop = get_object_or_404(ProductShop, shop_id=shop_id, product_id=product_id)
+        new_price = request.data.get('price')
+
+        # Save the current price to the price history
+        PriceHistory.objects.create(product_shop=product_shop, price=product_shop.price)
+
+        # Update the current price
+        product_shop.price = new_price
+        product_shop.save()
+
+        # You can return a response as needed
+        data = ProductSerializer(product_shop.product).data
+        data['stock_quantity'] = product_shop.stock_quantity
+        data['price'] = product_shop.price
+
+        return Response(data=data, status=status.HTTP_200_OK)   
     
 
         
