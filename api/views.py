@@ -110,26 +110,33 @@ class SearchProducts(APIView):
         # Fetch all products that contain the specified search query in their names
         matching_products = Product.objects.filter(product_name__icontains=search_query)
 
-        # Create a list to store information about each matching product
-        result_data = []
+        # Create a dictionary to store information about each shop and its products
+        shop_data = {}
+
         for product in matching_products:
             # Fetch the prices for each shop
             product_shops = ProductShop.objects.filter(product=product)
-            shop_product_info = []
 
             for product_shop in product_shops:
-                shop_product_info.append({
-                    "shop_id": product_shop.shop.shop_id,
-                    "shop_name": product_shop.shop.shop_name,
+                shop_id = product_shop.shop.shop_id
+
+                if shop_id not in shop_data:
+                    # If the shop is not already in the dictionary, add it
+                    shop_data[shop_id] = {
+                        "shop_id": shop_id,
+                        "shop_name": product_shop.shop.shop_name,
+                        "products": [],
+                    }
+
+                # Add product information to the shop's list of products
+                shop_data[shop_id]["products"].append({
+                    "product_id": product.product_id,
+                    "product_name": product.product_name,
                     "price": product_shop.price,
                 })
 
-            # Append information about the product to the result list
-            result_data.append({
-                "product_id": product.product_id,
-                "product_name": product.product_name,
-                "infor": shop_product_info,
-            })
+        # Convert the dictionary values to a list for the response
+        result_data = list(shop_data.values())
 
         return Response(data=result_data, status=status.HTTP_200_OK)
 
