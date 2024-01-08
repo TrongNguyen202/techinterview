@@ -7,7 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers, status
 from rest_framework.validators import UniqueValidator
 from .helpers import check_token
-from .models import Shop,Product,Category,ProductCategory,ProductImage,ProductShop,Comment,CommentImage,CustomUser
+from .models import Shop,Product,Category,ProductCategory,ProductImage,ProductShop,CustomUser,Review,ReviewImage
 
 class SignUpSerializers(serializers.ModelSerializer):
     username = serializers.CharField(
@@ -114,14 +114,5 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         exclude = ['product_id']
 
-class CommentImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CommentImage
-        exclude = ['image_id']
 
-class CommentSerializer(serializers.ModelSerializer):
-    images = CommentImageSerializer(many=True, read_only=True)
 
-    class Meta:
-        model = Comment
-        exclude = ['comment_id']

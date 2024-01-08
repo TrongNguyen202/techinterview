@@ -7,6 +7,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 class CustomUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     verify_token = models.CharField(("Verify token"), max_length=255, null=True)
+    avatar = models.URLField(null = True)
 
 class Shop(models.Model):
     shop_id = models.AutoField(primary_key=True)
@@ -35,7 +36,8 @@ class ProductCategory(models.Model):
 class ProductShop(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE)
-    stock_quantity = models.PositiveIntegerField()
+    stock_quantity = models.PositiveIntegerField(default=0)
+
     price = models.DecimalField(max_digits=10, decimal_places=2, default =0)
 
 
@@ -46,32 +48,21 @@ class ProductImage(models.Model):
 
 
 class Review(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     rating = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
     review_comment = models.TextField(blank=True, null=True) 
     created_at = models.DateTimeField(auto_now_add=True)
-  
-
-    def __str__(self):
-        return f"{self.user.username} - {self.product.product_name} - {self.rating} stars - Comment: {self.review_comment}"
     
-class Comment(models.Model):
-    comment_id = models.AutoField(primary_key=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    text = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    parent_comment = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
-    review = models.ForeignKey(Review, null=True, related_name='review', on_delete=models.CASCADE)
 
-    def __str__(self):
-        return f"{self.user.username} - {self.product.product_name} - Comment: {self.text}"
+ 
+    
 
-class CommentImage(models.Model):
-    comment = models.ForeignKey(Comment, related_name='images', on_delete=models.CASCADE)
+
+class ReviewImage(models.Model):
+    review = models.ForeignKey(Review, related_name='images', on_delete=models.CASCADE)
     image_url = models.URLField()
 
 class PriceHistory(models.Model):
