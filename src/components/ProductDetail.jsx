@@ -18,6 +18,7 @@ const ProductDetail = () => {
         }
         const data = await response.json();
         setProduct(data);
+        console.log(product)
         setCurrentImage(data.images[0].image_url);
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -57,8 +58,8 @@ const ProductDetail = () => {
       <div className="w-1/2 p-4 border-r border-gray-300">
         <Slider {...settings} className="rounded-lg  border border-gray-300 ">
           {product.images.map((image, index) => (
-            <div key={index} className="slider-thumbnail ">
-              <img src={image.image_url} alt={`Product Image ${index + 1}`} className="w-full h-full object-cover max-h-[400px]" />
+            <div key={index} className="slider-thumbnail cover">
+              <img src={image.image_url} alt={`Product Image ${index + 1}`} className="w-full h-full object-cover max-h-[400px] " />
             </div>
           ))}
         </Slider>
@@ -79,10 +80,7 @@ const ProductDetail = () => {
         <p className="mb-2 px-3 text-blue-700">Total Reviews: <p className='text-red-700'>{product.reviews}</p> </p>
         </div>
 
-        <div>
-          <h3 className="text-lg font-semibold mb-2">Selected Product</h3>
-          <img src={currentImage} alt="Selected Product" className="w-32 h-auto rounded-lg mb-4" />
-        </div>
+        
       </div>
     </div>
   );
