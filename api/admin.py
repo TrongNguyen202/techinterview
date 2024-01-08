@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, Shop, Category, Product, ProductCategory, ProductShop, Comment, CommentImage, ProductImage,Review
+from .models import CustomUser, Shop, Category, Product, ProductCategory, ProductShop, ReviewImage , ProductImage,Review,PriceHistory
 
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = ['user', 'verify_token']
@@ -31,15 +31,11 @@ class ProductShopAdmin(admin.ModelAdmin):
 
 admin.site.register(ProductShop, ProductShopAdmin)
 
-class CommentAdmin(admin.ModelAdmin):
-    list_display = ['comment_id', 'product', 'user', 'text', 'created_at', 'parent_comment']
 
-admin.site.register(Comment, CommentAdmin)
+class ReviewImageAdmin(admin.ModelAdmin):
+    list_display = ['review', 'image_url']
 
-class CommentImageAdmin(admin.ModelAdmin):
-    list_display = ['comment', 'image_url']
-
-admin.site.register(CommentImage, CommentImageAdmin)
+admin.site.register(ReviewImage)
 
 class ProductImageAdmin(admin.ModelAdmin):
     list_display = ['image_id', 'image_url']
@@ -47,3 +43,4 @@ class ProductImageAdmin(admin.ModelAdmin):
 admin.site.register(ProductImage, ProductImageAdmin)
 
 admin.site.register(Review)
+admin.site.register(PriceHistory)

@@ -24,7 +24,7 @@ from .serializers import (
 )
 from django.http import HttpResponse
 from django.http import JsonResponse
-from .models import Product,Shop,CommentImage,Category,Comment,CustomUser,ProductShop,ProductImage,ProductCategory,Review,PriceHistory
+from .models import Product,Shop,Category,CustomUser,ProductShop,ProductImage,ProductCategory,Review,PriceHistory
 
 class SignUp(APIView):
     permission_classes = [AllowAny]
@@ -100,7 +100,8 @@ class ProductDetail(APIView):
         data['average_rating'] = average_rating
         data['total_ratings'] = total_ratings
         data['price'] = price
-
+        data['reviews'] = reviews.count()
+ 
         return Response(data=data, status=status.HTTP_200_OK)
     
 
@@ -147,8 +148,7 @@ class UpdateProductPrice(APIView):
         product_shop = get_object_or_404(ProductShop, shop_id=shop_id, product_id=product_id)
         new_price = request.data.get('price')
 
-        # Save the current price to the price history
-        PriceHistory.objects.create(product_shop=product_shop, price=product_shop.price)
+        
 
         # Update the current price
         product_shop.price = new_price
@@ -162,6 +162,33 @@ class UpdateProductPrice(APIView):
 
         return Response(data=data, status=status.HTTP_200_OK)   
     
+
+class CreateProduct(APIView):
+
+    def post(self, request, shop_id):
+        serializer = ProductSerializer(data=request.data)
+
+        if serializer.is_valid():
+            new_product = serializer.save()
+
+            price = request.data.get('price')
+            stock_quantity = request.data.get('stock_quantity', 0)  # Set a default value if not provided
+
+            product_shop, created = ProductShop.objects.get_or_create(shop_id=shop_id, product=new_product)
+            product_shop.price = price
+            product_shop.stock_quantity = stock_quantity
+            product_shop.save()
+            PriceHistory.objects.create(product_shop=product_shop, price=price)
+
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# class PreviewLists(APIView):
+
+#     def get(self,request):
+
+
 
         
 
