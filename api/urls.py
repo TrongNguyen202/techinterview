@@ -19,7 +19,8 @@ urlpatterns = [
     path('shops/search-products/<str:search_query>', views.SearchProducts.as_view(), name='search-products'),
     path("shops/<int:shop_id>/products/<int:product_id>/update_prices", views.UpdateProductPrice.as_view(),name="product_update_price"),
     path("shops/<int:shop_id>/products//update_prices", views.UpdateProductPrice.as_view(),name="product_update_price"),
-    path("shops/<int:shop_id>/products/create", views.CreateProduct.as_view(),name="product_create")
+    path("shops/<int:shop_id>/products/create", views.CreateProduct.as_view(),name="product_create"),
+    path("shops/<int:shop_id>/products/<int:product_id>/price_history", views.PriceHistoryView.as_view(),name="price_history"),
   
   
  

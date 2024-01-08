@@ -110,6 +110,7 @@ class SearchProducts(APIView):
     def get(self, request, search_query):
         # Fetch all products that contain the specified search query in their names
         matching_products = Product.objects.filter(product_name__icontains=search_query)
+        prices = []
 
         # Create a dictionary to store information about each shop and its products
         shop_data = {}
@@ -117,6 +118,8 @@ class SearchProducts(APIView):
         for product in matching_products:
             # Fetch the prices for each shop
             product_shops = ProductShop.objects.filter(product=product)
+            for item in product_shops:
+                prices.append(item.price)
 
             for product_shop in product_shops:
                 shop_id = product_shop.shop.shop_id
@@ -139,7 +142,21 @@ class SearchProducts(APIView):
         # Convert the dictionary values to a list for the response
         result_data = list(shop_data.values())
 
+        # Add the 'prices_range' key with the 'prices' list to the result_data
+        result_data.append({"prices_range": prices})
+
+        # Calculate total number of products
+        total_products = matching_products.count()
+        result_data.append({"total_products": total_products})
+
+        # Calculate the minimum and maximum values in the prices list
+        if prices:
+            min_price = min(prices)
+            max_price = max(prices)
+            result_data.append({"min_price": min_price, "max_price": max_price})
+
         return Response(data=result_data, status=status.HTTP_200_OK)
+
 
 
 class UpdateProductPrice(APIView):
@@ -184,9 +201,32 @@ class CreateProduct(APIView):
 
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# class PreviewLists(APIView):
 
-#     def get(self,request):
+
+
+
+class PriceHistoryView(APIView):
+
+    def get(self, request, shop_id, product_id):
+        shop = get_object_or_404(Shop, shop_id=shop_id)
+        price_history_entries = PriceHistory.objects.filter(product_shop__shop=shop, product_shop__product_id=product_id)
+
+        history_data = []
+        for entry in price_history_entries:
+            history_data.append({
+                "price": entry.price,
+                "updated_at": entry.updated_at,
+            })
+
+        return Response({"price_history": history_data}, status=status.HTTP_200_OK)
+
+
+# class ReviewsList(APIView):
+
+#     def get(self, request, shop_id, product_id):
+
+        
+
 
 
 
