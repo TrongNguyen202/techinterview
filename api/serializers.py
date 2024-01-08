@@ -114,5 +114,13 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         exclude = ['product_id']
 
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = '__all__'
 
+class ReviewImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReviewImage
+        fields = '__all__'
 
