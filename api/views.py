@@ -16,15 +16,12 @@ from .serializers import (
     SignUpSerializers,
     VerifySerializers,
     ProductSerializer,
-    ProductImageSerializer,
-    ProductCategorySerializer,
-    ShopSerializer
+    ReviewSerializer,
+    ReviewImageSerializer
     
  
 )
-from django.http import HttpResponse
-from django.http import JsonResponse
-from .models import Product,Shop,Category,CustomUser,ProductShop,ProductImage,ProductCategory,Review,PriceHistory
+from .models import Product,Shop,ProductShop,Review,PriceHistory,ReviewImage
 
 class SignUp(APIView):
     permission_classes = [AllowAny]
@@ -79,6 +76,7 @@ class Verify(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ProductDetail(APIView):
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, shop_id, product_id):
         product = get_object_or_404(Product, product_id=product_id)
@@ -87,14 +85,12 @@ class ProductDetail(APIView):
         price = product_shop.price
         reviews = Review.objects.filter(product=product)
 
-        # Calculate average rating
         total_ratings = reviews.count()
         if total_ratings > 0:
             average_rating = sum(review.rating for review in reviews) / total_ratings
         else:
             average_rating = 0
 
-        # Add average rating and total ratings to the response data
         data = ProductSerializer(product).data
         data['stock_quantity'] = quantity
         data['average_rating'] = average_rating
@@ -106,17 +102,15 @@ class ProductDetail(APIView):
     
 
 class SearchProducts(APIView):
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, search_query):
-        # Fetch all products that contain the specified search query in their names
         matching_products = Product.objects.filter(product_name__icontains=search_query)
         prices = []
 
-        # Create a dictionary to store information about each shop and its products
         shop_data = {}
 
         for product in matching_products:
-            # Fetch the prices for each shop
             product_shops = ProductShop.objects.filter(product=product)
             for item in product_shops:
                 prices.append(item.price)
@@ -125,31 +119,24 @@ class SearchProducts(APIView):
                 shop_id = product_shop.shop.shop_id
 
                 if shop_id not in shop_data:
-                    # If the shop is not already in the dictionary, add it
                     shop_data[shop_id] = {
                         "shop_id": shop_id,
                         "shop_name": product_shop.shop.shop_name,
                         "products": [],
                     }
 
-                # Add product information to the shop's list of products
                 shop_data[shop_id]["products"].append({
                     "product_id": product.product_id,
                     "product_name": product.product_name,
                     "price": product_shop.price,
                 })
 
-        # Convert the dictionary values to a list for the response
+
         result_data = list(shop_data.values())
-
-        # Add the 'prices_range' key with the 'prices' list to the result_data
         result_data.append({"prices_range": prices})
-
-        # Calculate total number of products
         total_products = matching_products.count()
         result_data.append({"total_products": total_products})
 
-        # Calculate the minimum and maximum values in the prices list
         if prices:
             min_price = min(prices)
             max_price = max(prices)
@@ -160,19 +147,16 @@ class SearchProducts(APIView):
 
 
 class UpdateProductPrice(APIView):
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request, shop_id, product_id):
         product_shop = get_object_or_404(ProductShop, shop_id=shop_id, product_id=product_id)
         new_price = request.data.get('price')
 
-        
-
-        # Update the current price
         product_shop.price = new_price
         product_shop.save()
         PriceHistory.objects.create(product_shop=product_shop, price=product_shop.price)
-        
-        # You can return a response as needed
+
         data = ProductSerializer(product_shop.product).data
         data['stock_quantity'] = product_shop.stock_quantity
         data['price'] = product_shop.price
@@ -181,7 +165,7 @@ class UpdateProductPrice(APIView):
     
 
 class CreateProduct(APIView):
-
+    permission_classes = (IsAuthenticated,)
     def post(self, request, shop_id):
         serializer = ProductSerializer(data=request.data)
 
@@ -189,7 +173,7 @@ class CreateProduct(APIView):
             new_product = serializer.save()
 
             price = request.data.get('price')
-            stock_quantity = request.data.get('stock_quantity', 0)  # Set a default value if not provided
+            stock_quantity = request.data.get('stock_quantity', 0)  
 
             product_shop, created = ProductShop.objects.get_or_create(shop_id=shop_id, product=new_product)
             product_shop.price = price
@@ -206,6 +190,7 @@ class CreateProduct(APIView):
 
 
 class PriceHistoryView(APIView):
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, shop_id, product_id):
         shop = get_object_or_404(Shop, shop_id=shop_id)
@@ -220,15 +205,19 @@ class PriceHistoryView(APIView):
 
         return Response({"price_history": history_data}, status=status.HTTP_200_OK)
 
+class ReviewsList(APIView):
+    permission_classes = (IsAuthenticated,)
 
-# class ReviewsList(APIView):
+    def get(self, request, product_id):
+        reviews = Review.objects.filter(product_id=product_id)
+        serializer = ReviewSerializer(reviews, many=True)
+        data = serializer.data
 
-#     def get(self, request, shop_id, product_id):
+        for review_data in data:
+            review_id = review_data['id']
+            images = ReviewImage.objects.filter(review_id=review_id)
+            image_serializer = ReviewImageSerializer(images, many=True)
+            review_data['images'] = image_serializer.data
 
-        
-
-
-
-
-        
+        return Response({"reviews": data}, status=status.HTTP_200_OK)
 
