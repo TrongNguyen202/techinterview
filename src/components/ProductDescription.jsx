@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 const ProductDescription = () => {
   const [productData, setProductData] = useState({
     description: '',
-    otherInfo: '', // Include other fields as needed
+  
   });
 
   useEffect(() => {
@@ -13,7 +13,7 @@ const ProductDescription = () => {
         const data = await response.json();
         setProductData({
           description: data.description,
-          otherInfo: data.otherInfo, // Include other fields from the API response
+         
         });
       } catch (error) {
         console.error('Error fetching product data:', error);
@@ -33,8 +33,8 @@ const ProductDescription = () => {
       <h1  className='text-red-700 text-center'>Mô tả sản phẩm</h1>
       <div className='text-center' dangerouslySetInnerHTML={{ __html: productData.description }} />
 
-      {/* Render other information */}
-      <p>Other Info: {productData.otherInfo}</p>
+  
+  
     </div>
   );
 };

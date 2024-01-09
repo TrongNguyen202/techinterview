@@ -534,3 +534,63 @@ video {
   --tw-backdrop-saturate:  ;
   --tw-backdrop-sepia:  ;
 }
+.reviews-container {
+  max-width: 600px;
+  margin: auto;
+}
+
+.reviews-heading {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.reviews-list {
+  list-style: none;
+  padding: 0;
+}
+
+.review-item {
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.review-rating {
+  font-weight: bold;
+}
+
+.review-created-at {
+  color: #666;
+}
+
+.review-comment {
+  margin-top: 10px;
+}
+
+.review-images {
+  margin-top: 10px;
+}
+
+.image-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+}
+
+.review-image {
+  max-width: 100px;
+  max-height: 100px;
+  margin-right: 10px;
+  border-radius: 5px;
+}
+
+body {
+  padding-left: 20px;  /* Đặt giá trị padding trái tùy ý */
+  padding-right: 20px; /* Đặt giá trị padding phải tùy ý */
+}

@@ -8,6 +8,7 @@ import PriceHistoryChart from './components/PriceHistoryChart';
 import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
 import ProductDescription from './components/ProductDescription';
+import Reviews from './components/Reviews';
 Chart.register(CategoryScale);
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
       <PriceHistoryChart/>
       </div>
       <ProductDescription/>
+      <Reviews/>
       
     </div>
   );
